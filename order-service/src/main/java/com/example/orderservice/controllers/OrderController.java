@@ -1,5 +1,6 @@
 package com.example.orderservice.controllers;
 
+import com.example.orderservice.dto.OrderDetailsDTO;
 import com.example.orderservice.dto.OrderRequestDTO;
 import com.example.orderservice.dto.OrderResponseDTO;
 import com.example.orderservice.models.Order;
@@ -53,6 +54,13 @@ public class OrderController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("{id}/details")
+    public ResponseEntity<OrderDetailsDTO> getOrderDetails(@PathVariable Long id){
+        OrderDetailsDTO details = service.getOrderDetails(id);
+        if(details == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(details);
     }
 }
 

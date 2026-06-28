@@ -1,5 +1,6 @@
 package com.example.productservice.controllers;
 
+import com.example.productservice.dto.ProductDetailsDTO;
 import com.example.productservice.dto.ProductRequestDTO;
 import com.example.productservice.dto.ProductResponseDTO;
 import com.example.productservice.models.Product;
@@ -63,6 +64,13 @@ public class ProductController {
     public ResponseEntity<Void> delete(@PathVariable Long id){
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/details")
+    public ResponseEntity<ProductDetailsDTO> getProductDetails(@PathVariable Long id) {
+        ProductDetailsDTO details = service.getProductDetails(id);
+        if (details == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(details);
     }
 
 }

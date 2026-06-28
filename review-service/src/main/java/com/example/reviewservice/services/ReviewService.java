@@ -26,5 +26,6 @@ public class ReviewService {
         }).orElse(null);
     }
     public void delete(Long id) { repository.deleteById(id); }
+    public List<Review> findByProductId(Long productId){ return repository.findByProductId(productId);}
 }
 
