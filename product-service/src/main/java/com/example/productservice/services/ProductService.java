@@ -1,34 +1,55 @@
 package com.example.productservice.services;
 
-import com.example.productservice.clients.ReviewClient;
+import com.example.productservice.dto.ProductRequestDTO;
+import com.example.productservice.dto.ProductResponseDTO;
 import com.example.productservice.dto.ProductDetailsDTO;
 import com.example.productservice.dto.ReviewDTO;
 import com.example.productservice.models.Product;
 import com.example.productservice.repositories.ProductRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
 
     private final ProductRepository repository;
-    private final ReviewClient reviewClient;
+    private final ProductProxyService productProxyService;
+    private final ModelMapper mapper;
 
-    public ProductService(ProductRepository repository, ReviewClient reviewClient) {
+    public ProductService(ProductRepository repository, ProductProxyService productProxyService, ModelMapper mapper) {
         this.repository = repository;
-        this.reviewClient = reviewClient;
+        this.productProxyService = productProxyService;
+        this.mapper = mapper;
     }
 
-    public List<Product> findAll() { return repository.findAll(); }
-    public Product findById(Long id) { return repository.findById(id).orElse(null); }
-    public Product create(Product p) { return repository.save(p); }
-    public Product update(Long id, Product p) {
+    public List<ProductResponseDTO> findAll() {
+        return repository.findAll().stream()
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    public ProductResponseDTO findById(Long id) {
+        return repository.findById(id)
+                .map(this::toResponseDto)
+                .orElse(null);
+    }
+
+    public ProductResponseDTO create(ProductRequestDTO productDto) {
+        Product product = mapper.map(productDto, Product.class);
+        return toResponseDto(repository.save(product));
+    }
+
+    public ProductResponseDTO update(Long id, ProductRequestDTO productDto) {
+        Product p = mapper.map(productDto, Product.class);
         return repository.findById(id).map(existing -> {
             existing.setName(p.getName());
             existing.setDescription(p.getDescription());
             existing.setPrice(p.getPrice());
-            return repository.save(existing);
+            existing.setStock(p.getStock());
+            return toResponseDto(repository.save(existing));
         }).orElse(null);
     }
     public void delete(Long id) { repository.deleteById(id); }
@@ -37,8 +58,7 @@ public class ProductService {
         Product product = repository.findById(id).orElse(null);
         if (product == null) return null;
 
-        // Feign poziv ka review-service
-        List<ReviewDTO> reviews = reviewClient.getReviewsByProductId(id);
+        List<ReviewDTO> reviews = productProxyService.getReviewsByProductId(id);
 
         double averageRating = reviews.stream()
                 .mapToInt(ReviewDTO::getRating)
@@ -51,11 +71,15 @@ public class ProductService {
         response.setName(product.getName());
         response.setDescription(product.getDescription());
         response.setPrice(product.getPrice());
+        response.setStock(product.getStock());
         response.setReviews(reviews);
         response.setAverageRating(averageRating);
         response.setTotalReviews(reviews.size());
 
         return response;
+    }
+    private ProductResponseDTO toResponseDto(Product product) {
+        return mapper.map(product, ProductResponseDTO.class);
     }
 }
 

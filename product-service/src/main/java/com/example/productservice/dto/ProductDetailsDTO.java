@@ -17,6 +17,7 @@ public class ProductDetailsDTO {
     private String name;
     private String description;
     private BigDecimal price;
+    private Integer stock;
     private List<ReviewDTO> reviews;
     private Double averageRating;
     private Integer totalReviews;

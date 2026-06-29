@@ -21,5 +21,8 @@ public class ProductRequestDTO {
 
     @NotNull
     private BigDecimal price;
+
+    @NotNull
+    private Integer stock;
 }
 
