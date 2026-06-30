@@ -1,4 +1,4 @@
-package com.example.notificationservice.dto;
+package com.example.reviewservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,10 +9,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class NotificationResponseDTO {
+public class ReviewDetailsDTO {
     private Long id;
+    private Long productId;
     private Long userId;
-    private Long orderId;
-    private String message;
+    private Integer rating;
+    private String comment;
+    private UserDTO user;
+    private ProductDTO product;
 }
 

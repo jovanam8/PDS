@@ -20,11 +20,14 @@ public class ProductProxyService {
     @CircuitBreaker(name = "reviewService", fallbackMethod = "getReviewsByProductIdFallback")
     @Retry(name = "reviewService")
     public List<ReviewDTO> getReviewsByProductId(Long productId) {
-        return reviewClient.getReviewsByProductId(productId);
+        List<ReviewDTO> reviews = reviewClient.getReviewsByProductId(productId);
+        if(reviews == null) return List.of();
+
+        return reviews;
     }
 
     public List<ReviewDTO> getReviewsByProductIdFallback(Long productId, Throwable throwable) {
-        return List.of();
+        throw new RuntimeException("Review service unavailable");
     }
 }
 

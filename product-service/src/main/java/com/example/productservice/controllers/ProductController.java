@@ -5,6 +5,7 @@ import com.example.productservice.dto.ProductRequestDTO;
 import com.example.productservice.dto.ProductResponseDTO;
 import com.example.productservice.services.ProductService;
 import jakarta.validation.Valid;
+import org.hibernate.validator.constraints.ParameterScriptAssert;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -61,6 +62,16 @@ public class ProductController {
         ProductDetailsDTO details = service.getProductDetails(id);
         if (details == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(details);
+    }
+
+    @PostMapping("/reduce-stock/{id}")
+    public void reduceStock(@PathVariable Long id, @RequestParam Integer quantity){
+        service.reduceStock(id,quantity);
+    }
+
+    @PostMapping("/add-stock/{id}")
+    public void addStock(@PathVariable Long id, @RequestParam Integer quantity){
+        service.addStock(id,quantity);
     }
 
 }

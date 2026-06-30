@@ -1,21 +1,21 @@
-package com.example.orderservice.services;
+package com.example.reviewservice.services;
 
-import com.example.orderservice.clients.ProductClient;
-import com.example.orderservice.clients.UserClient;
-import com.example.orderservice.dto.ProductDTO;
-import com.example.orderservice.dto.UserDTO;
+import com.example.reviewservice.clients.ProductClient;
+import com.example.reviewservice.clients.UserClient;
+import com.example.reviewservice.dto.ProductDTO;
+import com.example.reviewservice.dto.UserDTO;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OrderProxyService {
+public class ReviewProxyService {
 
     private final UserClient userClient;
     private final ProductClient productClient;
 
-    public OrderProxyService(UserClient userClient, ProductClient productClient) {
+    public ReviewProxyService(UserClient userClient, ProductClient productClient) {
         this.userClient = userClient;
         this.productClient = productClient;
     }
@@ -32,7 +32,6 @@ public class OrderProxyService {
 
     public UserDTO getUserFallback(Long userId, Throwable throwable) {
         throw new RuntimeException("User service unavailable");
-        //return new UserDTO(userId, "Unavailable User", "unavailable@example.com");
     }
 
     @CircuitBreaker(name = "productService", fallbackMethod = "getProductFallback")
@@ -41,23 +40,12 @@ public class OrderProxyService {
         try {
             return productClient.getProductById(productId);
         } catch (FeignException.NotFound e) {
-            return null; // proizvod legitimno ne postoji, nije problem servisa
+            return null;
         }
     }
 
     public ProductDTO getProductFallback(Long productId, Throwable throwable) {
         throw new RuntimeException("Product service unavailable");
-        //return new ProductDTO(productId, "Unavailable Product", "Product details unavailable", 0.0d);
-    }
-
-    @CircuitBreaker(name = "productService", fallbackMethod = "reduceStockFallback")
-    @Retry(name = "productService")
-    public void reduceStock(Long id, Integer quantity){
-        productClient.reduceStock(id,quantity);
-    }
-
-    public void reduceStockFallback(Long id, Integer quantity, Throwable throwable){
-        throw new RuntimeException("Product service unavailable for reduce stock");
     }
 }
 

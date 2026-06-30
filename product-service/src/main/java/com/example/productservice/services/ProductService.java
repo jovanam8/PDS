@@ -78,6 +78,23 @@ public class ProductService {
 
         return response;
     }
+
+    public void reduceStock(Long id, Integer quantity){
+        Product product = repository.findById(id).orElse(null);
+        if(product.getStock() < quantity)
+            throw new RuntimeException("Not enough stock");
+
+        product.setStock(product.getStock() - quantity);
+        repository.save(product);
+    }
+
+    public void addStock(Long id, Integer quantity) {
+        Product product = repository.findById(id).orElseThrow();
+
+        product.setStock(product.getStock() + quantity);
+        repository.save(product);
+    }
+
     private ProductResponseDTO toResponseDto(Product product) {
         return mapper.map(product, ProductResponseDTO.class);
     }

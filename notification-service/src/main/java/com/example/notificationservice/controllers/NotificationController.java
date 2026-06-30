@@ -1,5 +1,6 @@
 package com.example.notificationservice.controllers;
 
+import com.example.notificationservice.dto.NotificationDetailsDTO;
 import com.example.notificationservice.dto.NotificationRequestDTO;
 import com.example.notificationservice.dto.NotificationResponseDTO;
 import com.example.notificationservice.services.NotificationService;
@@ -28,6 +29,13 @@ public class NotificationController {
         NotificationResponseDTO notification = service.findById(id);
         if (notification == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(notification);
+    }
+
+    @GetMapping("/{id}/details")
+    public ResponseEntity<NotificationDetailsDTO> getNotificationDetails(@PathVariable Long id) {
+        NotificationDetailsDTO details = service.getNotificationDetails(id);
+        if (details == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(details);
     }
 
     @PostMapping

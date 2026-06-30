@@ -1,7 +1,5 @@
 package com.example.notificationservice.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,13 +9,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class NotificationRequestDTO {
-    @NotNull
+public class OrderDTO {
+    private Long id;
+    private Long productId;
     private Long userId;
-
-    private Long orderId;
-
-    @NotBlank
-    private String message;
+    private Integer quantity;
 }
 

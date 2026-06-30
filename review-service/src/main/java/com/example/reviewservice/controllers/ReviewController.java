@@ -1,5 +1,6 @@
 package com.example.reviewservice.controllers;
 
+import com.example.reviewservice.dto.ReviewDetailsDTO;
 import com.example.reviewservice.dto.ReviewRequestDTO;
 import com.example.reviewservice.dto.ReviewResponseDTO;
 import com.example.reviewservice.services.ReviewService;
@@ -28,6 +29,13 @@ public class ReviewController {
         ReviewResponseDTO review = service.findById(id);
         if (review == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(review);
+    }
+
+    @GetMapping("/{id}/details")
+    public ResponseEntity<ReviewDetailsDTO> getReviewDetails(@PathVariable Long id) {
+        ReviewDetailsDTO details = service.getReviewDetails(id);
+        if (details == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(details);
     }
 
     @PostMapping

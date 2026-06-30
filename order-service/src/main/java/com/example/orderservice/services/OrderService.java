@@ -43,12 +43,28 @@ public class OrderService {
     }
 
     public OrderResponseDTO create(OrderRequestDTO orderDto) {
+        UserDTO user = proxyService.getUserProtected(orderDto.getUserId());
+        //nije null circuit breaker vrati instancu promeniti uslov ili ono sto vraca
+        if(user == null ) throw new RuntimeException("User not found"); //dodati posle konkretnu klasu exceptiona
+
+        ProductDTO product = proxyService.getProductProtected(orderDto.getProductId());
+        if(product == null) throw  new RuntimeException("Product not found");
+
         Order order = mapper.map(orderDto, Order.class);
+
+        proxyService.reduceStock(product.getId(), order.getQuantity());
         return toResponseDto(repository.save(order));
     }
 
     public OrderResponseDTO update(Long id, OrderRequestDTO orderDto) {
         Order o = mapper.map(orderDto, Order.class);
+
+        ProductDTO product = proxyService.getProductProtected(orderDto.getProductId());
+        if(product == null) throw new RuntimeException("Product not found");
+
+        UserDTO user = proxyService.getUserProtected(orderDto.getUserId());
+        if(user == null) throw  new RuntimeException("User not found");
+
         return repository.findById(id).map(existing -> {
             existing.setProductId(o.getProductId());
             existing.setUserId(o.getUserId());
