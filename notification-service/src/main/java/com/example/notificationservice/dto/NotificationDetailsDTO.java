@@ -11,10 +11,7 @@ import lombok.Setter;
 @Setter
 public class NotificationDetailsDTO {
     private Long id;
-    private Long userId;
-    private Long orderId;
     private String message;
     private UserDTO user;
-    private OrderDTO order;
 }
 

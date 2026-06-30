@@ -80,7 +80,8 @@ public class ProductService {
     }
 
     public void reduceStock(Long id, Integer quantity){
-        Product product = repository.findById(id).orElse(null);
+        Product product = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found: " + id));
         if(product.getStock() < quantity)
             throw new RuntimeException("Not enough stock");
 

@@ -15,8 +15,6 @@ public class NotificationRequestDTO {
     @NotNull
     private Long userId;
 
-    private Long orderId;
-
     @NotBlank
     private String message;
 }

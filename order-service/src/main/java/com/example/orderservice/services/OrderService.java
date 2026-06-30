@@ -44,42 +44,57 @@ public class OrderService {
 
     public OrderResponseDTO create(OrderRequestDTO orderDto) {
         UserDTO user = proxyService.getUserProtected(orderDto.getUserId());
-        //nije null circuit breaker vrati instancu promeniti uslov ili ono sto vraca
+
         if(user == null ) throw new RuntimeException("User not found"); //dodati posle konkretnu klasu exceptiona
 
         ProductDTO product = proxyService.getProductProtected(orderDto.getProductId());
         if(product == null) throw  new RuntimeException("Product not found");
 
-        Order order = mapper.map(orderDto, Order.class);
+        proxyService.reduceStock(orderDto.getProductId(), orderDto.getQuantity());
 
-        proxyService.reduceStock(product.getId(), order.getQuantity());
+        Order order = mapper.map(orderDto, Order.class);
         return toResponseDto(repository.save(order));
     }
 
     public OrderResponseDTO update(Long id, OrderRequestDTO orderDto) {
-        Order o = mapper.map(orderDto, Order.class);
+        Order existing = repository.findById(id).orElse(null);
+        if (existing == null) return null;
 
         ProductDTO product = proxyService.getProductProtected(orderDto.getProductId());
         if(product == null) throw new RuntimeException("Product not found");
 
         UserDTO user = proxyService.getUserProtected(orderDto.getUserId());
-        if(user == null) throw  new RuntimeException("User not found");
+        if(user == null) throw new RuntimeException("User not found");
 
-        return repository.findById(id).map(existing -> {
-            existing.setProductId(o.getProductId());
-            existing.setUserId(o.getUserId());
-            existing.setQuantity(o.getQuantity());
-            return toResponseDto(repository.save(existing));
-        }).orElse(null);
+        if (existing.getProductId().equals(orderDto.getProductId())) {
+            int diff = orderDto.getQuantity() - existing.getQuantity();
+            if (diff > 0) {
+                proxyService.reduceStock(orderDto.getProductId(), diff);
+            } else if (diff < 0) {
+                proxyService.addStock(orderDto.getProductId(), -diff); // treba dodati u OrderProxyService, analogno reduceStock
+            }
+        } else {
+            proxyService.addStock(existing.getProductId(), existing.getQuantity());
+            proxyService.reduceStock(orderDto.getProductId(), orderDto.getQuantity());
+        }
+
+        existing.setProductId(orderDto.getProductId());
+        existing.setUserId(orderDto.getUserId());
+        existing.setQuantity(orderDto.getQuantity());
+        return toResponseDto(repository.save(existing));
     }
+
     public void delete(Long id) { repository.deleteById(id); }
 
     public OrderDetailsDTO getOrderDetails(Long orderId) {
         Order order = repository.findById(orderId).orElse(null);
-        if (order == null) return  null; //exception kasnije
+        if (order == null) throw new RuntimeException("Order not found");
 
         UserDTO user = proxyService.getUserProtected(order.getUserId());
+        if (user == null) throw new RuntimeException("User not found");
+
         ProductDTO product = proxyService.getProductProtected(order.getProductId());
+        if (product == null) throw new RuntimeException("Product not found");
 
         OrderDetailsDTO response = new OrderDetailsDTO();
         response.setId(order.getId());

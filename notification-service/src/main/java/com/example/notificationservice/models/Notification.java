@@ -22,8 +22,6 @@ public class Notification {
     @NotNull
     private Long userId;
 
-    private Long orderId;
-
     @NotBlank
     private String message;
 }

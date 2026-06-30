@@ -1,8 +1,6 @@
 package com.example.notificationservice.services;
 
-import com.example.notificationservice.clients.OrderClient;
 import com.example.notificationservice.clients.UserClient;
-import com.example.notificationservice.dto.OrderDTO;
 import com.example.notificationservice.dto.UserDTO;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -13,11 +11,9 @@ import org.springframework.stereotype.Service;
 public class NotificationProxyService {
 
     private final UserClient userClient;
-    private final OrderClient orderClient;
 
-    public NotificationProxyService(UserClient userClient, OrderClient orderClient) {
+    public NotificationProxyService(UserClient userClient) {
         this.userClient = userClient;
-        this.orderClient = orderClient;
     }
 
     @CircuitBreaker(name = "userService", fallbackMethod = "getUserFallback")
@@ -34,18 +30,5 @@ public class NotificationProxyService {
         throw new RuntimeException("User service unavailable");
     }
 
-    @CircuitBreaker(name = "orderService", fallbackMethod = "getOrderFallback")
-    @Retry(name = "orderService")
-    public OrderDTO getOrderProtected(Long orderId) {
-        try {
-            return orderClient.getOrderById(orderId);
-        } catch (FeignException.NotFound e) {
-            return null;
-        }
-    }
-
-    public OrderDTO getOrderFallback(Long orderId, Throwable throwable) {
-        throw new RuntimeException("Order service unavailable");
-    }
 }
 

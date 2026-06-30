@@ -11,8 +11,6 @@ import lombok.Setter;
 @Setter
 public class ReviewDetailsDTO {
     private Long id;
-    private Long productId;
-    private Long userId;
     private Integer rating;
     private String comment;
     private UserDTO user;

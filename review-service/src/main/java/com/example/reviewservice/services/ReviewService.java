@@ -85,8 +85,6 @@ public class ReviewService {
 
         ReviewDetailsDTO response = new ReviewDetailsDTO();
         response.setId(review.getId());
-        response.setProductId(review.getProductId());
-        response.setUserId(review.getUserId());
         response.setRating(review.getRating());
         response.setComment(review.getComment());
         response.setUser(user);

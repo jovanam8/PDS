@@ -12,7 +12,6 @@ import lombok.Setter;
 public class NotificationResponseDTO {
     private Long id;
     private Long userId;
-    private Long orderId;
     private String message;
 }
 

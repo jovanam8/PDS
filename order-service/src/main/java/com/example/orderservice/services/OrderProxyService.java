@@ -59,5 +59,15 @@ public class OrderProxyService {
     public void reduceStockFallback(Long id, Integer quantity, Throwable throwable){
         throw new RuntimeException("Product service unavailable for reduce stock");
     }
+
+    @CircuitBreaker(name = "productService", fallbackMethod = "addStockFallback")
+    @Retry(name = "productService")
+    public void addStock(Long id, Integer quantity){
+        productClient.addStock(id, quantity);
+    }
+
+    public void addStockFallback(Long id, Integer quantity, Throwable throwable){
+        throw new RuntimeException("Product service unavailable for add stock");
+    }
 }
 
