@@ -5,7 +5,6 @@ import com.example.productservice.dto.ProductRequestDTO;
 import com.example.productservice.dto.ProductResponseDTO;
 import com.example.productservice.services.ProductService;
 import jakarta.validation.Valid;
-import org.hibernate.validator.constraints.ParameterScriptAssert;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -30,11 +29,7 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> get(@PathVariable Long id) {
-        ProductResponseDTO product = service.findById(id);
-        if (product == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(product);
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
@@ -44,11 +39,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> update(@PathVariable Long id, @Valid @RequestBody ProductRequestDTO productDto) {
-        ProductResponseDTO updated = service.update(id, productDto);
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(service.update(id, productDto));
     }
 
     @DeleteMapping("/{id}")
@@ -59,9 +50,7 @@ public class ProductController {
 
     @GetMapping("/{id}/details")
     public ResponseEntity<ProductDetailsDTO> getProductDetails(@PathVariable Long id) {
-        ProductDetailsDTO details = service.getProductDetails(id);
-        if (details == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(details);
+        return ResponseEntity.ok(service.getProductDetails(id));
     }
 
     @PostMapping("/reduce-stock/{id}")

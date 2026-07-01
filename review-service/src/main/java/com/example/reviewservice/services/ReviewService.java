@@ -5,6 +5,7 @@ import com.example.reviewservice.dto.ReviewResponseDTO;
 import com.example.reviewservice.dto.ProductDTO;
 import com.example.reviewservice.dto.ReviewDetailsDTO;
 import com.example.reviewservice.dto.UserDTO;
+import com.example.reviewservice.exceptions.NotFoundException;
 import com.example.reviewservice.models.Review;
 import com.example.reviewservice.repositories.ReviewRepository;
 import org.modelmapper.ModelMapper;
@@ -35,15 +36,15 @@ public class ReviewService {
     public ReviewResponseDTO findById(Long id) {
         return repository.findById(id)
                 .map(this::toResponseDto)
-                .orElse(null);
+                .orElseThrow(()-> new NotFoundException("Review with id " + id + " not found"));
     }
 
     public ReviewResponseDTO create(ReviewRequestDTO reviewDto) {
         UserDTO user = proxyService.getUserProtected(reviewDto.getUserId());
-        if (user == null) throw new RuntimeException("User not found");
+        if (user == null) throw new NotFoundException("User with " + reviewDto.getUserId() + "not found");
 
         ProductDTO product = proxyService.getProductProtected(reviewDto.getProductId());
-        if (product == null) throw new RuntimeException("Product not found");
+        if (product == null) throw new NotFoundException("Product with " + reviewDto.getProductId() + "not found");
 
         Review review = mapper.map(reviewDto, Review.class);
         return toResponseDto(repository.save(review));
@@ -53,10 +54,10 @@ public class ReviewService {
         Review r = mapper.map(reviewDto, Review.class);
 
         ProductDTO product = proxyService.getProductProtected(reviewDto.getProductId());
-        if (product == null) throw new RuntimeException("Product not found");
+        if (product == null) throw new NotFoundException("Product with " + reviewDto.getProductId() + "not found");
 
         UserDTO user = proxyService.getUserProtected(reviewDto.getUserId());
-        if (user == null) throw new RuntimeException("User not found");
+        if (user == null) throw new NotFoundException("User with " + reviewDto.getUserId() + "not found");
 
         return repository.findById(id).map(existing -> {
             existing.setProductId(r.getProductId());
@@ -64,9 +65,10 @@ public class ReviewService {
             existing.setRating(r.getRating());
             existing.setComment(r.getComment());
             return toResponseDto(repository.save(existing));
-        }).orElse(null);
+        }).orElseThrow(() -> new NotFoundException("Review with id " + id + " not found"));
     }
     public void delete(Long id) { repository.deleteById(id); }
+
     public List<ReviewResponseDTO> findByProductId(Long productId){
         return repository.findByProductId(productId).stream()
                 .map(this::toResponseDto)
@@ -74,14 +76,13 @@ public class ReviewService {
     }
 
     public ReviewDetailsDTO getReviewDetails(Long reviewId) {
-        Review review = repository.findById(reviewId).orElse(null);
-        if (review == null) return null;
+        Review review = repository.findById(reviewId).orElseThrow(() -> new NotFoundException("Review with id " + reviewId + " not found"));
 
         UserDTO user = proxyService.getUserProtected(review.getUserId());
-        if (user == null) throw new RuntimeException("User not found");
+        if (user == null) throw new NotFoundException("User with id " + review.getUserId() + " not found");
 
         ProductDTO product = proxyService.getProductProtected(review.getProductId());
-        if (product == null) throw new RuntimeException("Product not found");
+        if (product == null) throw new NotFoundException("Product with id " + review.getProductId() + " not found");
 
         ReviewDetailsDTO response = new ReviewDetailsDTO();
         response.setId(review.getId());

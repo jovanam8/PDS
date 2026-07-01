@@ -4,6 +4,8 @@ import com.example.orderservice.clients.ProductClient;
 import com.example.orderservice.clients.UserClient;
 import com.example.orderservice.dto.ProductDTO;
 import com.example.orderservice.dto.UserDTO;
+import com.example.orderservice.exceptions.InsufficientStockException;
+import com.example.orderservice.exceptions.ServiceUnavailableException;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -31,7 +33,7 @@ public class OrderProxyService {
     }
 
     public UserDTO getUserFallback(Long userId, Throwable throwable) {
-        throw new RuntimeException("User service unavailable");
+        throw new ServiceUnavailableException("User service is currently unavailable");
         //return new UserDTO(userId, "Unavailable User", "unavailable@example.com");
     }
 
@@ -46,18 +48,23 @@ public class OrderProxyService {
     }
 
     public ProductDTO getProductFallback(Long productId, Throwable throwable) {
-        throw new RuntimeException("Product service unavailable");
+        throw new ServiceUnavailableException("Product service unavailable");
         //return new ProductDTO(productId, "Unavailable Product", "Product details unavailable", 0.0d);
     }
 
     @CircuitBreaker(name = "productService", fallbackMethod = "reduceStockFallback")
     @Retry(name = "productService")
     public void reduceStock(Long id, Integer quantity){
-        productClient.reduceStock(id,quantity);
+        try {
+            productClient.reduceStock(id, quantity);
+        } catch (FeignException.Conflict e) {
+            throw new InsufficientStockException("Not enough stock for product " + id);
+        }
     }
 
     public void reduceStockFallback(Long id, Integer quantity, Throwable throwable){
-        throw new RuntimeException("Product service unavailable for reduce stock");
+        if (throwable instanceof InsufficientStockException) throw (InsufficientStockException) throwable;
+        throw new ServiceUnavailableException("Product service is currently unavailable for reduce stock");
     }
 
     @CircuitBreaker(name = "productService", fallbackMethod = "addStockFallback")
@@ -67,7 +74,7 @@ public class OrderProxyService {
     }
 
     public void addStockFallback(Long id, Integer quantity, Throwable throwable){
-        throw new RuntimeException("Product service unavailable for add stock");
+        throw new ServiceUnavailableException("Product service is currently unavailable for add stock");
     }
 }
 

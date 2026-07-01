@@ -7,6 +7,7 @@ import com.example.orderservice.dto.OrderRequestDTO;
 import com.example.orderservice.dto.OrderResponseDTO;
 import com.example.orderservice.dto.ProductDTO;
 import com.example.orderservice.dto.UserDTO;
+import com.example.orderservice.exceptions.NotFoundException;
 import com.example.orderservice.models.Order;
 import com.example.orderservice.repositories.OrderRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -39,16 +40,16 @@ public class OrderService {
     public OrderResponseDTO findById(Long id) {
         return repository.findById(id)
                 .map(this::toResponseDto)
-                .orElse(null);
+                .orElseThrow(()-> new NotFoundException("Order with id " + id + " not found"));
     }
 
     public OrderResponseDTO create(OrderRequestDTO orderDto) {
         UserDTO user = proxyService.getUserProtected(orderDto.getUserId());
 
-        if(user == null ) throw new RuntimeException("User not found"); //dodati posle konkretnu klasu exceptiona
+        if(user == null ) throw new NotFoundException("User with id " + orderDto.getUserId() + " not found");
 
         ProductDTO product = proxyService.getProductProtected(orderDto.getProductId());
-        if(product == null) throw  new RuntimeException("Product not found");
+        if(product == null) throw  new NotFoundException("Product with id " + orderDto.getProductId() + " not found");
 
         proxyService.reduceStock(orderDto.getProductId(), orderDto.getQuantity());
 
@@ -57,14 +58,13 @@ public class OrderService {
     }
 
     public OrderResponseDTO update(Long id, OrderRequestDTO orderDto) {
-        Order existing = repository.findById(id).orElse(null);
-        if (existing == null) return null;
+        Order existing = repository.findById(id).orElseThrow(() -> new NotFoundException("Order with id " + id + " not found"));
 
         ProductDTO product = proxyService.getProductProtected(orderDto.getProductId());
-        if(product == null) throw new RuntimeException("Product not found");
+        if(product == null) throw new NotFoundException("Product with id " + orderDto.getProductId() + " not found");
 
         UserDTO user = proxyService.getUserProtected(orderDto.getUserId());
-        if(user == null) throw new RuntimeException("User not found");
+        if(user == null) throw new NotFoundException("User with id " + orderDto.getUserId() + " not found");
 
         if (existing.getProductId().equals(orderDto.getProductId())) {
             int diff = orderDto.getQuantity() - existing.getQuantity();
@@ -88,13 +88,13 @@ public class OrderService {
 
     public OrderDetailsDTO getOrderDetails(Long orderId) {
         Order order = repository.findById(orderId).orElse(null);
-        if (order == null) throw new RuntimeException("Order not found");
+        if (order == null) throw new NotFoundException("Order with id " + orderId + " not found");
 
         UserDTO user = proxyService.getUserProtected(order.getUserId());
-        if (user == null) throw new RuntimeException("User not found");
+        if (user == null) throw new NotFoundException("User with id" + order.getUserId() + " not found");
 
         ProductDTO product = proxyService.getProductProtected(order.getProductId());
-        if (product == null) throw new RuntimeException("Product not found");
+        if (product == null) throw new NotFoundException("Product with id" + order.getProductId() + " not found");
 
         OrderDetailsDTO response = new OrderDetailsDTO();
         response.setId(order.getId());

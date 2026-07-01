@@ -2,6 +2,7 @@ package com.example.userservice.services;
 
 import com.example.userservice.dto.UserRequestDTO;
 import com.example.userservice.dto.UserResponseDTO;
+import com.example.userservice.exceptions.NotFoundException;
 import com.example.userservice.models.User;
 import com.example.userservice.repositories.UserRepository;
 import org.modelmapper.ModelMapper;
@@ -30,7 +31,7 @@ public class UserService {
     public UserResponseDTO findById(Long id) {
         return repository.findById(id)
                 .map(this::toResponseDto)
-                .orElse(null);
+                .orElseThrow(()-> new NotFoundException("User with id " + id  + " not found "));
     }
 
     public UserResponseDTO create(UserRequestDTO userDto) {
@@ -44,7 +45,7 @@ public class UserService {
             existing.setName(user.getName());
             existing.setEmail(user.getEmail());
             return toResponseDto(repository.save(existing));
-        }).orElse(null);
+        }).orElseThrow(()-> new NotFoundException("User with id " + id  + " not found "));
     }
 
     public void delete(Long id) {

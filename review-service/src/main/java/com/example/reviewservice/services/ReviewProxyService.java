@@ -4,6 +4,7 @@ import com.example.reviewservice.clients.ProductClient;
 import com.example.reviewservice.clients.UserClient;
 import com.example.reviewservice.dto.ProductDTO;
 import com.example.reviewservice.dto.UserDTO;
+import com.example.reviewservice.exceptions.ServiceUnavailableException;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -31,7 +32,7 @@ public class ReviewProxyService {
     }
 
     public UserDTO getUserFallback(Long userId, Throwable throwable) {
-        throw new RuntimeException("User service unavailable");
+        throw new ServiceUnavailableException("User service unavailable");
     }
 
     @CircuitBreaker(name = "productService", fallbackMethod = "getProductFallback")
@@ -45,7 +46,7 @@ public class ReviewProxyService {
     }
 
     public ProductDTO getProductFallback(Long productId, Throwable throwable) {
-        throw new RuntimeException("Product service unavailable");
+        throw new ServiceUnavailableException("Product service unavailable");
     }
 }
 

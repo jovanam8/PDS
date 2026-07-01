@@ -2,6 +2,7 @@ package com.example.notificationservice.services;
 
 import com.example.notificationservice.clients.UserClient;
 import com.example.notificationservice.dto.UserDTO;
+import com.example.notificationservice.exceptions.ServiceUnavailableException;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -27,7 +28,7 @@ public class NotificationProxyService {
     }
 
     public UserDTO getUserFallback(Long userId, Throwable throwable) {
-        throw new RuntimeException("User service unavailable");
+        throw new ServiceUnavailableException("User service unavailable");
     }
 
 }

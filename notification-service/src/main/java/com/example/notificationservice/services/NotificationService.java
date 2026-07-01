@@ -4,6 +4,7 @@ import com.example.notificationservice.dto.NotificationRequestDTO;
 import com.example.notificationservice.dto.NotificationResponseDTO;
 import com.example.notificationservice.dto.NotificationDetailsDTO;
 import com.example.notificationservice.dto.UserDTO;
+import com.example.notificationservice.exceptions.NotFoundException;
 import com.example.notificationservice.models.Notification;
 import com.example.notificationservice.repositories.NotificationRepository;
 import org.modelmapper.ModelMapper;
@@ -34,12 +35,12 @@ public class NotificationService {
     public NotificationResponseDTO findById(Long id) {
         return repository.findById(id)
                 .map(this::toResponseDto)
-                .orElse(null);
+                .orElseThrow(() -> new NotFoundException("Notification with id " + id + " not found"));
     }
 
     public NotificationResponseDTO create(NotificationRequestDTO notificationDto) {
         UserDTO user = proxyService.getUserProtected(notificationDto.getUserId());
-        if (user == null) throw new RuntimeException("User not found");
+        if (user == null) throw new NotFoundException("User with id " + notificationDto.getUserId() + " not found");
 
         Notification notification = mapper.map(notificationDto, Notification.class);
         return toResponseDto(repository.save(notification));
@@ -49,22 +50,21 @@ public class NotificationService {
         Notification n = mapper.map(notificationDto, Notification.class);
 
         UserDTO user = proxyService.getUserProtected(notificationDto.getUserId());
-        if (user == null) throw new RuntimeException("User not found");
+        if (user == null) throw new NotFoundException("User with id " + notificationDto.getUserId() + " not found");
 
         return repository.findById(id).map(existing -> {
             existing.setUserId(n.getUserId());
             existing.setMessage(n.getMessage());
             return toResponseDto(repository.save(existing));
-        }).orElse(null);
+        }).orElseThrow(() -> new NotFoundException("Notification with id " + id + " not found"));
     }
     public void delete(Long id) { repository.deleteById(id); }
 
     public NotificationDetailsDTO getNotificationDetails(Long notificationId) {
-        Notification notification = repository.findById(notificationId).orElse(null);
-        if (notification == null) return null;
+        Notification notification = repository.findById(notificationId).orElseThrow(() -> new NotFoundException("Notification with id " + notificationId + " not found"));
 
         UserDTO user = proxyService.getUserProtected(notification.getUserId());
-        if (user == null) throw new RuntimeException("User not found");
+        if (user == null) throw new NotFoundException("User with id " + notification.getUserId() + " not found");
 
         NotificationDetailsDTO response = new NotificationDetailsDTO();
         response.setId(notification.getId());

@@ -2,6 +2,7 @@ package com.example.productservice.services;
 
 import com.example.productservice.clients.ReviewClient;
 import com.example.productservice.dto.ReviewDTO;
+import com.example.productservice.exceptions.ServiceUnavailableException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class ProductProxyService {
     }
 
     public List<ReviewDTO> getReviewsByProductIdFallback(Long productId, Throwable throwable) {
-        throw new RuntimeException("Review service unavailable");
+        throw new ServiceUnavailableException("Review service is currently unavailable");
     }
 }
 

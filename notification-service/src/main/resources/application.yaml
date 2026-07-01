@@ -48,6 +48,4 @@ resilience4j:
       userService:
         max-attempts: 3
         wait-duration: 1s
-      orderService:
-        max-attempts: 3
-        wait-duration: 1s
+

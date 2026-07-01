@@ -26,16 +26,12 @@ public class NotificationController {
 
     @GetMapping("/{id}")
     public ResponseEntity<NotificationResponseDTO> get(@PathVariable Long id) {
-        NotificationResponseDTO notification = service.findById(id);
-        if (notification == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(notification);
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping("/{id}/details")
     public ResponseEntity<NotificationDetailsDTO> getNotificationDetails(@PathVariable Long id) {
-        NotificationDetailsDTO details = service.getNotificationDetails(id);
-        if (details == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(details);
+        return ResponseEntity.ok(service.getNotificationDetails(id));
     }
 
     @PostMapping
@@ -45,9 +41,7 @@ public class NotificationController {
 
     @PutMapping("/{id}")
     public ResponseEntity<NotificationResponseDTO> update(@PathVariable Long id, @Valid @RequestBody NotificationRequestDTO notificationDto) {
-        NotificationResponseDTO updated = service.update(id, notificationDto);
-        if (updated == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(service.update(id, notificationDto));
     }
 
     @DeleteMapping("/{id}")

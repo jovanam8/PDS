@@ -52,6 +52,8 @@ resilience4j:
         automatic-transition-from-open-to-half-open-enabled: true
         permitted-number-of-calls-in-half-open-state: 3
         sliding-window-type: COUNT_BASED
+        ignoreExceptions:
+          - com.example.orderservice.exceptions.InsufficientStockException
   retry:
     instances:
       userService:
@@ -60,3 +62,5 @@ resilience4j:
       productService:
         max-attempts: 3
         wait-duration: 1s
+        ignoreExceptions:
+          - com.example.orderservice.exceptions.InsufficientStockException

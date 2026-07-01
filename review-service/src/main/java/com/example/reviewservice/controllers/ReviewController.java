@@ -26,16 +26,12 @@ public class ReviewController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ReviewResponseDTO> get(@PathVariable Long id) {
-        ReviewResponseDTO review = service.findById(id);
-        if (review == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(review);
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping("/{id}/details")
     public ResponseEntity<ReviewDetailsDTO> getReviewDetails(@PathVariable Long id) {
-        ReviewDetailsDTO details = service.getReviewDetails(id);
-        if (details == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(details);
+        return ResponseEntity.ok(service.getReviewDetails(id));
     }
 
     @PostMapping
@@ -45,9 +41,7 @@ public class ReviewController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ReviewResponseDTO> update(@PathVariable Long id, @Valid @RequestBody ReviewRequestDTO reviewDto) {
-        ReviewResponseDTO updated = service.update(id, reviewDto);
-        if (updated == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(service.update(id, reviewDto));
     }
 
     @DeleteMapping("/{id}")

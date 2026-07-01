@@ -37,6 +37,11 @@ resilience4j:
         automatic-transition-from-open-to-half-open-enabled: true
         permitted-number-of-calls-in-half-open-state: 3
         sliding-window-type: COUNT_BASED
+  retry:
+    instances:
+      reviewService:
+        max-attempts: 3
+        wait-duration: 1s
 eureka:
   client:
     service-url:

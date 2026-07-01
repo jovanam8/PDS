@@ -4,6 +4,8 @@ import com.example.productservice.dto.ProductRequestDTO;
 import com.example.productservice.dto.ProductResponseDTO;
 import com.example.productservice.dto.ProductDetailsDTO;
 import com.example.productservice.dto.ReviewDTO;
+import com.example.productservice.exceptions.InsufficientStockException;
+import com.example.productservice.exceptions.NotFoundException;
 import com.example.productservice.models.Product;
 import com.example.productservice.repositories.ProductRepository;
 import org.modelmapper.ModelMapper;
@@ -34,7 +36,7 @@ public class ProductService {
     public ProductResponseDTO findById(Long id) {
         return repository.findById(id)
                 .map(this::toResponseDto)
-                .orElse(null);
+                .orElseThrow(() -> new NotFoundException("Product with id " + id + " not found"));
     }
 
     public ProductResponseDTO create(ProductRequestDTO productDto) {
@@ -50,13 +52,12 @@ public class ProductService {
             existing.setPrice(p.getPrice());
             existing.setStock(p.getStock());
             return toResponseDto(repository.save(existing));
-        }).orElse(null);
+        }).orElseThrow(() -> new NotFoundException("Product with id " + id + " not found"));
     }
     public void delete(Long id) { repository.deleteById(id); }
 
     public ProductDetailsDTO getProductDetails(Long id) {
-        Product product = repository.findById(id).orElse(null);
-        if (product == null) return null;
+        Product product = repository.findById(id).orElseThrow(() -> new NotFoundException("Product with id " + id + " not found"));
 
         List<ReviewDTO> reviews = productProxyService.getReviewsByProductId(id);
 
@@ -81,16 +82,16 @@ public class ProductService {
 
     public void reduceStock(Long id, Integer quantity){
         Product product = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+                .orElseThrow(() -> new NotFoundException("Product with id " + id + " not found"));
         if(product.getStock() < quantity)
-            throw new RuntimeException("Not enough stock");
+            throw new InsufficientStockException("Not enough stock for product with id " + id);
 
         product.setStock(product.getStock() - quantity);
         repository.save(product);
     }
 
     public void addStock(Long id, Integer quantity) {
-        Product product = repository.findById(id).orElseThrow();
+        Product product = repository.findById(id).orElseThrow(() -> new NotFoundException("Product with id " + id + " not found"));
 
         product.setStock(product.getStock() + quantity);
         repository.save(product);

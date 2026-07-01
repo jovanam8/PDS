@@ -26,9 +26,7 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponseDTO> get(@PathVariable Long id) {
-        OrderResponseDTO order = service.findById(id);
-        if (order == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(order);
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
@@ -38,9 +36,7 @@ public class OrderController {
 
     @PutMapping("/{id}")
     public ResponseEntity<OrderResponseDTO> update(@PathVariable Long id, @Valid @RequestBody OrderRequestDTO orderDto) {
-        OrderResponseDTO updated = service.update(id, orderDto);
-        if (updated == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(service.update(id, orderDto));
     }
 
     @DeleteMapping("/{id}")
@@ -51,9 +47,7 @@ public class OrderController {
 
     @GetMapping("/{id}/details")
     public ResponseEntity<OrderDetailsDTO> getOrderDetails(@PathVariable Long id){
-        OrderDetailsDTO details = service.getOrderDetails(id);
-        if(details == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(details);
+        return ResponseEntity.ok(service.getOrderDetails(id));
     }
 }
 
