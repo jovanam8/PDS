@@ -1,7 +1,5 @@
 package com.example.orderservice.services;
 
-import com.example.orderservice.clients.ProductClient;
-import com.example.orderservice.clients.UserClient;
 import com.example.orderservice.dto.OrderDetailsDTO;
 import com.example.orderservice.dto.OrderRequestDTO;
 import com.example.orderservice.dto.OrderResponseDTO;
@@ -10,8 +8,6 @@ import com.example.orderservice.dto.UserDTO;
 import com.example.orderservice.exceptions.NotFoundException;
 import com.example.orderservice.models.Order;
 import com.example.orderservice.repositories.OrderRepository;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -22,12 +18,12 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository repository;
-    private final OrderProxyService proxyService;
+    private final ExternalClientService externalClientService;
     private final ModelMapper mapper;
 
-    public OrderService(OrderRepository repository, OrderProxyService proxyService, ModelMapper mapper) {
+    public OrderService(OrderRepository repository, ExternalClientService externalClientService, ModelMapper mapper) {
         this.repository = repository;
-        this.proxyService = proxyService;
+        this.externalClientService = externalClientService;
         this.mapper = mapper;
     }
 
@@ -44,14 +40,14 @@ public class OrderService {
     }
 
     public OrderResponseDTO create(OrderRequestDTO orderDto) {
-        UserDTO user = proxyService.getUserProtected(orderDto.getUserId());
+        UserDTO user = externalClientService.getUserProtected(orderDto.getUserId());
 
         if(user == null ) throw new NotFoundException("User with id " + orderDto.getUserId() + " not found");
 
-        ProductDTO product = proxyService.getProductProtected(orderDto.getProductId());
+        ProductDTO product = externalClientService.getProductProtected(orderDto.getProductId());
         if(product == null) throw  new NotFoundException("Product with id " + orderDto.getProductId() + " not found");
 
-        proxyService.reduceStock(orderDto.getProductId(), orderDto.getQuantity());
+        externalClientService.reduceStock(orderDto.getProductId(), orderDto.getQuantity());
 
         Order order = mapper.map(orderDto, Order.class);
         return toResponseDto(repository.save(order));
@@ -60,22 +56,22 @@ public class OrderService {
     public OrderResponseDTO update(Long id, OrderRequestDTO orderDto) {
         Order existing = repository.findById(id).orElseThrow(() -> new NotFoundException("Order with id " + id + " not found"));
 
-        ProductDTO product = proxyService.getProductProtected(orderDto.getProductId());
+        ProductDTO product = externalClientService.getProductProtected(orderDto.getProductId());
         if(product == null) throw new NotFoundException("Product with id " + orderDto.getProductId() + " not found");
 
-        UserDTO user = proxyService.getUserProtected(orderDto.getUserId());
+        UserDTO user = externalClientService.getUserProtected(orderDto.getUserId());
         if(user == null) throw new NotFoundException("User with id " + orderDto.getUserId() + " not found");
 
         if (existing.getProductId().equals(orderDto.getProductId())) {
             int diff = orderDto.getQuantity() - existing.getQuantity();
             if (diff > 0) {
-                proxyService.reduceStock(orderDto.getProductId(), diff);
+                externalClientService.reduceStock(orderDto.getProductId(), diff);
             } else if (diff < 0) {
-                proxyService.addStock(orderDto.getProductId(), -diff); // treba dodati u OrderProxyService, analogno reduceStock
+                externalClientService.addStock(orderDto.getProductId(), -diff);
             }
         } else {
-            proxyService.addStock(existing.getProductId(), existing.getQuantity());
-            proxyService.reduceStock(orderDto.getProductId(), orderDto.getQuantity());
+            externalClientService.addStock(existing.getProductId(), existing.getQuantity());
+            externalClientService.reduceStock(orderDto.getProductId(), orderDto.getQuantity());
         }
 
         existing.setProductId(orderDto.getProductId());
@@ -90,10 +86,10 @@ public class OrderService {
         Order order = repository.findById(orderId).orElse(null);
         if (order == null) throw new NotFoundException("Order with id " + orderId + " not found");
 
-        UserDTO user = proxyService.getUserProtected(order.getUserId());
+        UserDTO user = externalClientService.getUserProtected(order.getUserId());
         if (user == null) throw new NotFoundException("User with id" + order.getUserId() + " not found");
 
-        ProductDTO product = proxyService.getProductProtected(order.getProductId());
+        ProductDTO product = externalClientService.getProductProtected(order.getProductId());
         if (product == null) throw new NotFoundException("Product with id" + order.getProductId() + " not found");
 
         OrderDetailsDTO response = new OrderDetailsDTO();

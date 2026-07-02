@@ -18,12 +18,12 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository repository;
-    private final ProductProxyService productProxyService;
+    private final ExternalClientService externalClientService;
     private final ModelMapper mapper;
 
-    public ProductService(ProductRepository repository, ProductProxyService productProxyService, ModelMapper mapper) {
+    public ProductService(ProductRepository repository, ExternalClientService externalClientService, ModelMapper mapper) {
         this.repository = repository;
-        this.productProxyService = productProxyService;
+        this.externalClientService = externalClientService;
         this.mapper = mapper;
     }
 
@@ -59,7 +59,7 @@ public class ProductService {
     public ProductDetailsDTO getProductDetails(Long id) {
         Product product = repository.findById(id).orElseThrow(() -> new NotFoundException("Product with id " + id + " not found"));
 
-        List<ReviewDTO> reviews = productProxyService.getReviewsByProductId(id);
+        List<ReviewDTO> reviews = externalClientService.getReviewsByProductId(id);
 
         double averageRating = reviews.stream()
                 .mapToInt(ReviewDTO::getRating)

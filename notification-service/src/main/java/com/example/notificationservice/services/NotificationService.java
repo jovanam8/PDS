@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private final NotificationRepository repository;
-    private final NotificationProxyService proxyService;
+    private final ExternalClientService externalClientService;
     private final ModelMapper mapper;
 
-    public NotificationService(NotificationRepository repository, NotificationProxyService proxyService, ModelMapper mapper) {
+    public NotificationService(NotificationRepository repository, ExternalClientService externalClientService, ModelMapper mapper) {
         this.repository = repository;
-        this.proxyService = proxyService;
+        this.externalClientService = externalClientService;
         this.mapper = mapper;
     }
 
@@ -39,7 +39,7 @@ public class NotificationService {
     }
 
     public NotificationResponseDTO create(NotificationRequestDTO notificationDto) {
-        UserDTO user = proxyService.getUserProtected(notificationDto.getUserId());
+        UserDTO user = externalClientService.getUserProtected(notificationDto.getUserId());
         if (user == null) throw new NotFoundException("User with id " + notificationDto.getUserId() + " not found");
 
         Notification notification = mapper.map(notificationDto, Notification.class);
@@ -49,7 +49,7 @@ public class NotificationService {
     public NotificationResponseDTO update(Long id, NotificationRequestDTO notificationDto) {
         Notification n = mapper.map(notificationDto, Notification.class);
 
-        UserDTO user = proxyService.getUserProtected(notificationDto.getUserId());
+        UserDTO user = externalClientService.getUserProtected(notificationDto.getUserId());
         if (user == null) throw new NotFoundException("User with id " + notificationDto.getUserId() + " not found");
 
         return repository.findById(id).map(existing -> {
@@ -63,7 +63,7 @@ public class NotificationService {
     public NotificationDetailsDTO getNotificationDetails(Long notificationId) {
         Notification notification = repository.findById(notificationId).orElseThrow(() -> new NotFoundException("Notification with id " + notificationId + " not found"));
 
-        UserDTO user = proxyService.getUserProtected(notification.getUserId());
+        UserDTO user = externalClientService.getUserProtected(notification.getUserId());
         if (user == null) throw new NotFoundException("User with id " + notification.getUserId() + " not found");
 
         NotificationDetailsDTO response = new NotificationDetailsDTO();

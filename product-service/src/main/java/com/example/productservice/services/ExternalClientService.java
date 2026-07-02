@@ -8,13 +8,13 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+//sloj enkapsulira sve pozive ka drugim mikroservisima, zaštićene Resilience4j-em
 @Service
-public class ProductProxyService {
+public class ExternalClientService {
 
     private final ReviewClient reviewClient;
 
-    public ProductProxyService(ReviewClient reviewClient) {
+    public ExternalClientService(ReviewClient reviewClient) {
         this.reviewClient = reviewClient;
     }
 

@@ -11,12 +11,12 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ReviewProxyService {
+public class ExternalClientService {
 
     private final UserClient userClient;
     private final ProductClient productClient;
 
-    public ReviewProxyService(UserClient userClient, ProductClient productClient) {
+    public ExternalClientService(UserClient userClient, ProductClient productClient) {
         this.userClient = userClient;
         this.productClient = productClient;
     }

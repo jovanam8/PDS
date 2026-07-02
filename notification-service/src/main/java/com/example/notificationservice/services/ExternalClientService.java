@@ -9,11 +9,11 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.stereotype.Service;
 
 @Service
-public class NotificationProxyService {
+public class ExternalClientService {
 
     private final UserClient userClient;
 
-    public NotificationProxyService(UserClient userClient) {
+    public ExternalClientService(UserClient userClient) {
         this.userClient = userClient;
     }
 
