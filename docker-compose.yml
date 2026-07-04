@@ -11,6 +11,17 @@ services:
       timeout: 5s
       retries: 10
       start_period: 20s
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # --- Poslovni servisi ---
 
@@ -43,8 +54,11 @@ services:
       - "8083:8083"
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: rabbitmq
     depends_on:
       eureka-server:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
   review-service:
@@ -65,8 +79,11 @@ services:
       - "8084:8084"
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: rabbitmq
     depends_on:
       eureka-server:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
   api-gateway:

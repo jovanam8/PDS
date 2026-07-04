@@ -1,17 +1,21 @@
 package com.example.orderservice.services;
 
+import com.example.orderservice.config.RabbitConfig;
 import com.example.orderservice.dto.OrderDetailsDTO;
 import com.example.orderservice.dto.OrderRequestDTO;
 import com.example.orderservice.dto.OrderResponseDTO;
 import com.example.orderservice.dto.ProductDTO;
 import com.example.orderservice.dto.UserDTO;
+import com.example.orderservice.events.OrderCreatedEvent;
 import com.example.orderservice.exceptions.NotFoundException;
 import com.example.orderservice.models.Order;
 import com.example.orderservice.repositories.OrderRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,11 +24,13 @@ public class OrderService {
     private final OrderRepository repository;
     private final ExternalClientService externalClientService;
     private final ModelMapper mapper;
+    private final RabbitTemplate rabbitTemplate;
 
-    public OrderService(OrderRepository repository, ExternalClientService externalClientService, ModelMapper mapper) {
+    public OrderService(OrderRepository repository, ExternalClientService externalClientService, ModelMapper mapper, RabbitTemplate rabbitTemplate) {
         this.repository = repository;
         this.externalClientService = externalClientService;
         this.mapper = mapper;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public List<OrderResponseDTO> findAll() {
@@ -50,7 +56,17 @@ public class OrderService {
         externalClientService.reduceStock(orderDto.getProductId(), orderDto.getQuantity());
 
         Order order = mapper.map(orderDto, Order.class);
-        return toResponseDto(repository.save(order));
+        Order saved = repository.save(order);
+
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                UUID.randomUUID(),
+                saved.getId(),
+                saved.getUserId(),
+                "Order #" + saved.getId() + " successfully created for user " + saved.getUserId()
+        );
+
+        rabbitTemplate.convertAndSend(RabbitConfig.ORDER_EXCHANGE, RabbitConfig.ORDER_CREATED_ROUTING_KEY, event);
+        return toResponseDto(saved);
     }
 
     public OrderResponseDTO update(Long id, OrderRequestDTO orderDto) {
