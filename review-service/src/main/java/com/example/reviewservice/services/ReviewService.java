@@ -41,10 +41,10 @@ public class ReviewService {
 
     public ReviewResponseDTO create(ReviewRequestDTO reviewDto) {
         UserDTO user = externalClientService.getUserProtected(reviewDto.getUserId());
-        if (user == null) throw new NotFoundException("User with id " + reviewDto.getUserId() + "not found");
+        if (user == null) throw new NotFoundException("User with id " + reviewDto.getUserId() + " not found");
 
         ProductDTO product = externalClientService.getProductProtected(reviewDto.getProductId());
-        if (product == null) throw new NotFoundException("Product with id " + reviewDto.getProductId() + "not found");
+        if (product == null) throw new NotFoundException("Product with id " + reviewDto.getProductId() + " not found");
 
         Review review = mapper.map(reviewDto, Review.class);
         return toResponseDto(repository.save(review));
@@ -54,10 +54,10 @@ public class ReviewService {
         Review r = mapper.map(reviewDto, Review.class);
 
         ProductDTO product = externalClientService.getProductProtected(reviewDto.getProductId());
-        if (product == null) throw new NotFoundException("Product with id " + reviewDto.getProductId() + "not found");
+        if (product == null) throw new NotFoundException("Product with id " + reviewDto.getProductId() + " not found");
 
         UserDTO user = externalClientService.getUserProtected(reviewDto.getUserId());
-        if (user == null) throw new NotFoundException("User with id " + reviewDto.getUserId() + "not found");
+        if (user == null) throw new NotFoundException("User with id " + reviewDto.getUserId() + " not found");
 
         return repository.findById(id).map(existing -> {
             existing.setProductId(r.getProductId());
