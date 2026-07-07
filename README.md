@@ -1,7 +1,7 @@
 # Mini E-commerce mikroservisi sa Spring Cloud-om
 
 Projekat iz Programiranja distribuiranih sistema - Mikroservisna aplikacija koja demonstrira
-principe modernog distribuiranog sistema u Javi sa Spring Boot-om: razdvajanje na servise, sinhrona komunikacija preko OpenFeign-a, dinamičko pronalaženje servisa kroz Eureka-u, kontrolisan ulaz kroz API Gateway, load balancing, otpornost na greške (Resilience4j) ,asinhrona komunikaciju preko RabbitMQ-a, Docker kontejnerizacija i globalni exception handling kroz @RestControllerAdvice.
+principe modernog distribuiranog sistema u Javi sa Spring Boot-om: razdvajanje na servise, sinhrona komunikacija preko OpenFeign-a, dinamičko pronalaženje servisa kroz Eureku, kontrolisan ulaz kroz API Gateway, load balancing, otpornost na greške (Resilience4j) ,asinhrona komunikaciju preko RabbitMQ-a, Docker kontejnerizacija i globalni exception handling kroz @RestControllerAdvice.
 
 ## Izabrana tema
 
