@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
-@Validated
 public class NotificationController {
 
     private final NotificationService service;

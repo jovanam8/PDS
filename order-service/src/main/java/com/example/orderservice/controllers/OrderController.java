@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
-@Validated
 public class OrderController {
 
     private final OrderService service;
